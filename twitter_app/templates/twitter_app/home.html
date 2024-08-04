@@ -1,0 +1,73 @@
+<!-- twitter_app/templates/twitter_app/home.html -->
+{% extends 'twitter_app/base.html' %} {% load static %} {% block content %}
+<link rel="stylesheet" href="{% static 'twitter_app/styles.css' %}" />
+
+<div class="container">
+  <h1 class="text-center">Simple Twitter App</h1>
+  <div class="form-group">
+    <form id="post-form" method="post" action="{% url 'post_status' %}">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit" class="btn">Post</button>
+    </form>
+    {% if error %}
+    <div class="alert" role="alert">{{ error }}</div>
+    {% endif %}
+  </div>
+
+  <h2>Statuses</h2>
+  <ul class="list-group">
+    {% for status in statuses %}
+    <li class="list-group-item">
+      <p>{{ status.content }}</p>
+      <small class="text-muted">{{ status.created_at }}</small>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<!-- Modal -->
+<div id="errorModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Error</h2>
+    </div>
+    <div class="modal-body">
+      <p id="errorMessage"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function closeModal() {
+    document.getElementById("errorModal").style.display = "none";
+  }
+
+  $(document).ready(function () {
+    $("#post-form").on("submit", function (event) {
+      event.preventDefault();
+      let content = $('textarea[name="content"]').val();
+
+      $.ajax({
+        url: '{% url "check_profanity" %}',
+        type: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify({ content: content }),
+        success: function (response) {
+          $("#post-form").off("submit").submit(); // Unbind the event and submit the form
+        },
+        error: function (response) {
+          $("#errorMessage").text(response.responseJSON.error);
+          $("#errorModal").css("display", "block");
+        },
+      });
+    });
+  });
+</script>
+{% endblock %}
