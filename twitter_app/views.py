@@ -7,6 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 
+# Load custom profanity words
+with open('custom_profanity_list.txt', 'r') as file:
+    custom_bad_words = file.read().splitlines()
+profanity.load_censor_words(custom_bad_words)
+
 def home(request):
     statuses = Status.objects.all().order_by('-created_at')
     form = StatusForm()
@@ -31,10 +36,6 @@ def check_profanity(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         content = data.get('content', '')
-        profanity.load_censor_words()
         if profanity.contains_profanity(content):
             return JsonResponse({"error": "Your post contains inappropriate content."}, status=400)
         return JsonResponse({"message": "Content is appropriate."})
-
-
-profanity.load_censor_words()
