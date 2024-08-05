@@ -66,7 +66,3 @@ This project is a Django web application that simulates a simple Twitter-like pl
 
 Place this `README.md` file in the root of your project directory. This should provide a clear and concise guide on how to set up and run your Django project. If you need further customization or additional details, feel free to ask!
 ```
-
-```
-
-```
